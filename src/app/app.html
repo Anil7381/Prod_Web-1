@@ -1,0 +1,493 @@
+<main>
+  @if (appView() === 'store') {
+  <header class="hero">
+    <nav class="topbar" aria-label="Store navigation">
+      <button class="brand nav-button" type="button" (click)="handleBrandClick()">{{ storeName }}</button>
+      <div class="nav-actions">
+        <a href="#checkout">Cart {{ itemCount() }}</a>
+        <a class="whatsapp-link" [href]="whatsappUrl()" target="_blank" rel="noopener">WhatsApp</a>
+      </div>
+    </nav>
+
+    <section class="hero-grid">
+      <div class="hero-copy">
+        <p class="eyebrow">Simple fashion checkout</p>
+        <h1>Shoes, shirts, pants and daily style essentials.</h1>
+        <p>
+          Pick your favorites, review the cart, pay with UPI, and confirm your order on WhatsApp.
+        </p>
+        <div class="hero-actions">
+          <a class="primary-btn" href="#catalog">Shop now</a>
+          <a class="ghost-btn" href="#checkout">View checkout</a>
+        </div>
+      </div>
+      <div class="hero-image">
+        <img [src]="featuredProduct().image" [alt]="featuredProduct().name" />
+        <div class="hero-card">
+          <strong>{{ formatPrice(featuredProduct().price) }}</strong>
+          <span>{{ featuredProduct().name }}</span>
+        </div>
+      </div>
+    </section>
+  </header>
+
+  <section id="catalog" class="catalog-section">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Catalog</p>
+        <h2>Featured products</h2>
+      </div>
+      <div class="filters" aria-label="Product categories">
+        @for (category of categories; track category) {
+          <button
+            type="button"
+            [class.active]="selectedCategory() === category"
+            (click)="setCategory(category)"
+          >
+            {{ category }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <div class="product-grid">
+      @for (product of filteredProducts(); track product.id) {
+        <article class="product-card">
+          <div class="product-media">
+            <img [src]="product.image" [alt]="product.name" loading="lazy" />
+            <strong class="price-tag">{{ formatPrice(product.price) }}</strong>
+          </div>
+          <div class="product-info">
+            <p>{{ product.category }}</p>
+            <h3>{{ product.name }}</h3>
+            <span class="stock-pill">{{ product.stock }} in stock</span>
+            <div class="product-footer">
+              @if (productQuantity(product) === 0) {
+                <button type="button" [disabled]="product.stock <= 0" (click)="addToCart(product)">
+                  Add to cart
+                </button>
+              } @else {
+                <div class="product-stepper" aria-label="Product quantity in cart">
+                  <button type="button" aria-label="Remove one from cart" (click)="decreaseProduct(product)">
+                    -
+                  </button>
+                  <span>{{ productQuantity(product) }} in cart</span>
+                  <button
+                    type="button"
+                    aria-label="Add one more to cart"
+                    [disabled]="productQuantity(product) >= product.stock"
+                    (click)="addToCart(product)"
+                  >
+                    +
+                  </button>
+                </div>
+              }
+            </div>
+          </div>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section id="checkout" class="checkout-section">
+    <div class="checkout-panel">
+      <div class="section-heading compact">
+        <div>
+          <p class="eyebrow">Checkout</p>
+          <h2>Cart and customer details</h2>
+        </div>
+        <span>{{ itemCount() }} items</span>
+      </div>
+
+      <div class="cart-list">
+        @if (cart().length === 0) {
+          <div class="empty-cart">Your cart is empty. Add a product to start an order.</div>
+        }
+
+        @for (item of cart(); track item.id + '-' + item.size) {
+          <article class="cart-item">
+            <img [src]="item.image" [alt]="item.name" />
+            <div>
+              <h3>{{ item.name }}</h3>
+              <p>{{ formatPrice(item.price) }} each</p>
+              <label>
+                Size
+                <select [ngModel]="item.size" (ngModelChange)="updateSize(item, $event)">
+                  @for (size of item.sizes; track size) {
+                    <option [value]="size">{{ size }}</option>
+                  }
+                </select>
+              </label>
+            </div>
+            <div class="quantity">
+              <button type="button" aria-label="Decrease quantity" (click)="decrease(item)">-</button>
+              <span>{{ item.qty }}</span>
+              <button type="button" aria-label="Increase quantity" (click)="increase(item)">+</button>
+            </div>
+            <strong class="line-total">{{ formatPrice(item.price * item.qty) }}</strong>
+            <button class="remove-btn" type="button" (click)="remove(item)">Remove</button>
+          </article>
+        }
+      </div>
+
+      <form class="customer-form">
+        <label>
+          Name
+          <input name="name" type="text" [(ngModel)]="customer.name" placeholder="Customer name" />
+        </label>
+        <label>
+          Phone
+          <input name="phone" type="tel" [(ngModel)]="customer.phone" placeholder="10 digit phone" />
+        </label>
+        <label class="full">
+          Delivery address
+          <textarea name="address" rows="3" [(ngModel)]="customer.address" placeholder="House, street, city"></textarea>
+        </label>
+      </form>
+    </div>
+
+    <aside class="payment-panel">
+      @if (checkoutStep() === 'success') {
+        <div class="success-box">
+          <div class="success-icon">✓</div>
+          <p class="eyebrow">Success</p>
+          <h2>Order placed successfully</h2>
+          <p>
+            @if (paymentMethod() === 'UPI') {
+              Send your payment screenshot on WhatsApp so the owner can verify and confirm the order.
+            } @else {
+              Send this COD order on WhatsApp so the owner can confirm availability.
+            }
+          </p>
+        </div>
+      } @else {
+        <p class="eyebrow">{{ checkoutStep() === 'payment' ? 'Payment' : 'Order summary' }}</p>
+        <h2>{{ checkoutStep() === 'payment' ? 'Choose payment method' : 'Ready to checkout?' }}</h2>
+      }
+      <div class="totals">
+        <div>
+          <span>Subtotal</span>
+          <strong>{{ formatPrice(subtotal()) }}</strong>
+        </div>
+        <div>
+          <span>Delivery</span>
+          <strong>{{ deliveryFee() === 0 ? 'Free' : formatPrice(deliveryFee()) }}</strong>
+        </div>
+        <div class="grand-total">
+          <span>Total</span>
+          <strong>{{ formatPrice(total()) }}</strong>
+        </div>
+      </div>
+
+      @if (checkoutStep() === 'cart') {
+        <button class="primary-btn checkout-btn" type="button" [disabled]="checkoutDisabled()" (click)="proceedToPayment()">
+          Proceed to payment
+        </button>
+      }
+
+      @if (checkoutStep() === 'payment') {
+        <div class="payment-methods" aria-label="Payment methods">
+          <button
+            type="button"
+            [class.active]="paymentMethod() === 'UPI'"
+            (click)="updatePaymentMethod('UPI')"
+          >
+            UPI
+          </button>
+          <button
+            type="button"
+            [class.active]="paymentMethod() === 'Cash on delivery'"
+            (click)="updatePaymentMethod('Cash on delivery')"
+          >
+            Cash on delivery
+          </button>
+        </div>
+        <p class="selected-payment">Selected: {{ paymentMethod() }}</p>
+
+        @if (paymentMethod() === 'UPI') {
+          <div class="qr-box">
+            <img [src]="qrImage()" alt="UPI QR code" />
+          </div>
+          <a class="upi-link" [href]="upiLink()">Pay {{ formatPrice(total()) }} with UPI</a>
+          <p class="payment-note">
+            After payment, place the order and send the payment screenshot on WhatsApp.
+          </p>
+        } @else {
+          <p class="cod-note">
+            No online payment needed. Send the order on WhatsApp and pay cash when delivered.
+          </p>
+        }
+
+        <button
+          class="primary-btn checkout-btn"
+          type="button"
+          (click)="placeOrder()"
+        >
+          {{ paymentMethod() === 'UPI' ? 'I have paid - Place order' : 'Place COD order' }}
+        </button>
+      }
+
+      @if (checkoutStep() === 'success') {
+        <a class="primary-btn checkout-btn" [href]="whatsappUrl()" target="_blank" rel="noopener">
+          {{ paymentMethod() === 'UPI' ? 'Send screenshot on WhatsApp' : 'Send order on WhatsApp' }}
+        </a>
+        <button class="secondary-btn" type="button" (click)="startNewOrder()">Start new order</button>
+      }
+
+      <p class="status">{{ sheetsStatus() }}</p>
+    </aside>
+  </section>
+  } @else {
+  <section class="admin-shell">
+    <div class="admin-header">
+      <div>
+        <p class="eyebrow">Admin</p>
+        <h1>Store dashboard</h1>
+        <p>Manage products and review orders without opening Google Sheets.</p>
+      </div>
+      <button class="ghost-btn" type="button" (click)="showStore()">Back to store</button>
+    </div>
+
+    @if (!adminLoggedIn()) {
+      <div class="admin-login">
+        <h2>Admin login</h2>
+        <label>
+          Email
+          <input
+            name="adminEmail"
+            type="email"
+            [ngModel]="adminEmail()"
+            (ngModelChange)="adminEmail.set($event)"
+            placeholder="admin@example.com"
+          />
+        </label>
+        <label>
+          Password
+          <input
+            name="adminPassword"
+            type="password"
+            [ngModel]="adminPassword()"
+            (ngModelChange)="adminPassword.set($event)"
+            placeholder="Enter password"
+          />
+        </label>
+        <button class="primary-btn" type="button" (click)="loginAdmin()">Open admin</button>
+        <p class="status">{{ adminStatus() }}</p>
+      </div>
+    } @else {
+      <div class="admin-tabs">
+        <button type="button" [class.active]="adminTab() === 'dashboard'" (click)="adminTab.set('dashboard')">
+          Dashboard
+        </button>
+        <button type="button" [class.active]="adminTab() === 'products'" (click)="adminTab.set('products')">
+          Products
+        </button>
+        <button type="button" [class.active]="adminTab() === 'orders'" (click)="adminTab.set('orders')">
+          Orders
+        </button>
+        <button type="button" (click)="loadAdminData()">Refresh</button>
+      </div>
+
+      <p class="status">{{ adminStatus() }}</p>
+
+      @if (adminTab() === 'dashboard') {
+        <section class="dashboard-grid" aria-label="Admin dashboard summary">
+          <article class="metric-card">
+            <span>Total orders</span>
+            <strong>{{ totalAdminOrders() }}</strong>
+            <small>All orders saved from website</small>
+          </article>
+          <article class="metric-card">
+            <span>UPI orders</span>
+            <strong>{{ upiAdminOrders() }}</strong>
+            <small>Need payment screenshot verification</small>
+          </article>
+          <article class="metric-card">
+            <span>COD orders</span>
+            <strong>{{ codAdminOrders() }}</strong>
+            <small>Confirm availability before delivery</small>
+          </article>
+          <article class="metric-card warning">
+            <span>Pending action</span>
+            <strong>{{ pendingAdminOrders() }}</strong>
+            <small>New or waiting orders</small>
+          </article>
+          <article class="metric-card">
+            <span>Total value</span>
+            <strong>{{ formatPrice(adminRevenue()) }}</strong>
+            <small>Total order amount</small>
+          </article>
+          <article class="metric-card">
+            <span>Active products</span>
+            <strong>{{ activeAdminProducts() }}</strong>
+            <small>Visible in store</small>
+          </article>
+          <article class="metric-card warning">
+            <span>Low stock</span>
+            <strong>{{ lowStockProducts() }}</strong>
+            <small>Active products with stock 5 or less</small>
+          </article>
+        </section>
+
+        <div class="admin-overview">
+          <section>
+            <div class="overview-heading">
+              <h2>Recent orders</h2>
+              <button type="button" (click)="adminTab.set('orders')">View all</button>
+            </div>
+            <div class="recent-orders">
+              @if (recentAdminOrders().length === 0) {
+                <div class="empty-cart">No orders yet.</div>
+              }
+
+              @for (order of recentAdminOrders(); track order.orderId) {
+                <article class="recent-order">
+                  <div>
+                    <strong>{{ order.customerName || 'Customer' }}</strong>
+                    <span>{{ order.orderId }}</span>
+                  </div>
+                  <div>
+                    <span>{{ order.paymentMethod }}</span>
+                    <strong>{{ formatPrice(order.total) }}</strong>
+                  </div>
+                  <small>{{ order.paymentStatus }}</small>
+                </article>
+              }
+            </div>
+          </section>
+
+          <section class="admin-todo">
+            <h2>Owner checklist</h2>
+            <div>
+              <strong>UPI</strong>
+              <p>Open WhatsApp screenshot, verify amount in UPI/bank app, then mark order confirmed in Sheets.</p>
+            </div>
+            <div>
+              <strong>COD</strong>
+              <p>Confirm product availability with customer, pack order, and collect cash on delivery.</p>
+            </div>
+            <div>
+              <strong>Stock</strong>
+              <p>Use Products tab to update stock, price, images, and active status.</p>
+            </div>
+          </section>
+        </div>
+      }
+
+      @if (adminTab() === 'products') {
+        <div class="admin-actions">
+          <button class="primary-btn" type="button" (click)="addAdminProduct()">Add product</button>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Category</th>
+                <th>Price</th>
+                <th>Stock</th>
+                <th>Sizes</th>
+                <th>Image URL</th>
+                <th>Active</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (product of adminProducts(); track product.id) {
+                <tr>
+                  <td>
+                    <input [(ngModel)]="product.name" [name]="'name-' + product.id" />
+                  </td>
+                  <td>
+                    <select [(ngModel)]="product.category" [name]="'category-' + product.id">
+                      <option value="Shoes">Shoes</option>
+                      <option value="Shirts">Shirts</option>
+                      <option value="Pants">Pants</option>
+                      <option value="Accessories">Accessories</option>
+                    </select>
+                  </td>
+                  <td>
+                    <input type="number" [(ngModel)]="product.price" [name]="'price-' + product.id" />
+                  </td>
+                  <td>
+                    <input type="number" [(ngModel)]="product.stock" [name]="'stock-' + product.id" />
+                  </td>
+                  <td>
+                    <input
+                      [ngModel]="sizesText(product)"
+                      (ngModelChange)="updateProductSizes(product, $event)"
+                      [name]="'sizes-' + product.id"
+                    />
+                  </td>
+                  <td>
+                    <input [(ngModel)]="product.image" [name]="'image-' + product.id" />
+                  </td>
+                  <td>
+                    <input type="checkbox" [(ngModel)]="product.active" [name]="'active-' + product.id" />
+                  </td>
+                  <td>
+                    <button type="button" (click)="saveAdminProduct(product)">Save</button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+
+      @if (adminTab() === 'orders') {
+        <div class="admin-table-wrap">
+          <table class="admin-table orders-table">
+            <thead>
+              <tr>
+                <th>Order</th>
+                <th>Customer</th>
+                <th>Phone</th>
+                <th>Total</th>
+                <th>Payment</th>
+                <th>Status</th>
+                <th>Items</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (order of adminOrders(); track order.orderId) {
+                <tr>
+                  <td>{{ order.orderId }}</td>
+                  <td>{{ order.customerName }}</td>
+                  <td>{{ order.phone }}</td>
+                  <td>{{ formatPrice(order.total) }}</td>
+                  <td>
+                    <span class="payment-chip">{{ paymentLabel(order.paymentMethod) }}</span>
+                  </td>
+                  <td>
+                    <select
+                      class="status-select"
+                      [ngModel]="orderStatus(order)"
+                      (ngModelChange)="updateAdminOrderStatus(order, $event)"
+                      [name]="'order-status-' + order.orderId"
+                    >
+                      <option value="Pending">Pending</option>
+                      <option value="Confirmed">Confirmed</option>
+                    </select>
+                  </td>
+                  <td>
+                    <div class="order-items-list">
+                      @for (item of orderItemLines(order.items); track item.name + item.meta + item.price) {
+                        <div class="order-item-line">
+                          <strong>{{ item.name }}</strong>
+                          <span>{{ item.meta }}</span>
+                          <em>{{ item.price }}</em>
+                        </div>
+                      }
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    }
+  </section>
+  }
+</main>
