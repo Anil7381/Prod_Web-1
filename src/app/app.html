@@ -243,7 +243,7 @@
       <div>
         <p class="eyebrow">Admin</p>
         <h1>Store dashboard</h1>
-        <p>Manage products and review orders without opening Google Sheets.</p>
+        <p>Manage products and review orders from your Supabase backend.</p>
       </div>
       <button class="ghost-btn" type="button" (click)="showStore()">Back to store</button>
     </div>
@@ -360,7 +360,7 @@
             <h2>Owner checklist</h2>
             <div>
               <strong>UPI</strong>
-              <p>Open WhatsApp screenshot, verify amount in UPI/bank app, then mark order confirmed in Sheets.</p>
+              <p>Open WhatsApp screenshot, verify amount in UPI/bank app, then mark order confirmed.</p>
             </div>
             <div>
               <strong>COD</strong>
@@ -420,13 +420,29 @@
                     />
                   </td>
                   <td>
-                    <input [(ngModel)]="product.image" [name]="'image-' + product.id" />
+                    <div class="image-editor">
+                      @if (product.image) {
+                        <img [src]="product.image" [alt]="product.name" />
+                      } @else {
+                        <div class="image-placeholder">No image</div>
+                      }
+                      <label class="upload-btn">
+                        Upload image
+                        <input type="file" accept="image/*" (change)="uploadProductImage(product, $event)" />
+                      </label>
+                      <input [(ngModel)]="product.image" [name]="'image-' + product.id" placeholder="Image URL" />
+                    </div>
                   </td>
                   <td>
                     <input type="checkbox" [(ngModel)]="product.active" [name]="'active-' + product.id" />
                   </td>
                   <td>
-                    <button type="button" (click)="saveAdminProduct(product)">Save</button>
+                    <div class="row-actions">
+                      <button type="button" (click)="saveAdminProduct(product)">Save</button>
+                      <button class="danger-btn" type="button" (click)="deleteAdminProduct(product)">
+                        Delete
+                      </button>
+                    </div>
                   </td>
                 </tr>
               }
@@ -443,6 +459,7 @@
                 <th>Order</th>
                 <th>Customer</th>
                 <th>Phone</th>
+                <th>Address</th>
                 <th>Total</th>
                 <th>Payment</th>
                 <th>Status</th>
@@ -455,6 +472,7 @@
                   <td>{{ order.orderId }}</td>
                   <td>{{ order.customerName }}</td>
                   <td>{{ order.phone }}</td>
+                  <td class="order-address">{{ order.address }}</td>
                   <td>{{ formatPrice(order.total) }}</td>
                   <td>
                     <span class="payment-chip">{{ paymentLabel(order.paymentMethod) }}</span>

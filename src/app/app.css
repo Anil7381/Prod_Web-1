@@ -455,6 +455,10 @@ textarea {
   top: 18px;
 }
 
+.payment-panel h2 {
+  margin-bottom: 14px;
+}
+
 .qr-box {
   display: grid;
   place-items: center;
@@ -748,8 +752,79 @@ textarea {
   transform: scale(1.2);
 }
 
+.row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 132px;
+}
+
+.danger-btn {
+  border-color: #e0a6a0 !important;
+  color: #9f2a1f !important;
+  background: #fff5f4 !important;
+}
+
+.image-editor {
+  display: grid;
+  grid-template-columns: 84px minmax(180px, 1fr);
+  gap: 8px;
+  align-items: center;
+  min-width: 320px;
+}
+
+.image-editor img,
+.image-placeholder {
+  grid-row: span 2;
+  width: 84px;
+  height: 84px;
+  border: 1px solid #eee8dc;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.image-placeholder {
+  display: grid;
+  place-items: center;
+  color: #766d60;
+  background: #fbfaf6;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+.upload-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  justify-self: start;
+  min-height: 39px;
+  border: 1px solid #ddd5c6;
+  border-radius: 8px;
+  padding: 8px 12px;
+  background: #ffffff;
+  color: #17211d;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.upload-btn input {
+  display: none;
+}
+
+.image-editor input {
+  min-width: 220px;
+}
+
 .orders-table td:last-child {
   min-width: 320px;
+}
+
+.order-address {
+  min-width: 220px;
+  color: #504a41;
+  line-height: 1.45;
+  white-space: normal;
 }
 
 .payment-chip {
