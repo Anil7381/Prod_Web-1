@@ -33,6 +33,7 @@ drop policy if exists "Public can reduce visible product stock" on public.produc
 drop policy if exists "Public can create orders" on public.orders;
 drop policy if exists "Admins can read orders" on public.orders;
 drop policy if exists "Admins can update orders" on public.orders;
+drop policy if exists "Admins can delete orders" on public.orders;
 
 create policy "Public can read active products"
 on public.products
@@ -72,6 +73,12 @@ for update
 to authenticated
 using (true)
 with check (true);
+
+create policy "Admins can delete orders"
+on public.orders
+for delete
+to authenticated
+using (true);
 
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values (
@@ -118,10 +125,17 @@ using (bucket_id = 'product-images');
 
 insert into public.products (id, name, category, price, image_url, sizes, stock, active)
 values
-  (1, 'Sprint Runner Sneakers', 'Shoes', 2499, 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=900&q=80', '["7","8","9","10"]', 12, true),
-  (2, 'Classic White Shirt', 'Shirts', 1299, 'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&w=900&q=80', '["S","M","L","XL"]', 20, true),
-  (3, 'Slim Fit Denim Pants', 'Pants', 1799, 'https://images.unsplash.com/photo-1542272604-787c3835535d?auto=format&fit=crop&w=900&q=80', '["30","32","34","36"]', 15, true),
-  (4, 'Everyday Graphic Tee', 'Shirts', 899, 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=900&q=80', '["S","M","L","XL"]', 25, true),
-  (5, 'Street Cargo Pants', 'Pants', 1999, 'https://images.unsplash.com/photo-1473966968600-fa801b869a1a?auto=format&fit=crop&w=900&q=80', '["30","32","34","36"]', 10, true),
-  (6, 'Canvas Tote Bag', 'Accessories', 699, 'https://images.unsplash.com/photo-1622560480605-d83c853bc5c3?auto=format&fit=crop&w=900&q=80', '["Free"]', 30, true)
-on conflict (id) do nothing;
+  (1, 'Heritage Automatic Watch', 'Shoes', 8999, 'https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=900&q=80', '["40mm","42mm","44mm"]', 12, true),
+  (2, 'Steel Chronograph Watch', 'Shirts', 6499, 'https://images.unsplash.com/photo-1508057198894-247b23fe5ade?auto=format&fit=crop&w=900&q=80', '["42mm","44mm"]', 20, true),
+  (3, 'Classic Minimal Watch', 'Pants', 3499, 'https://images.unsplash.com/photo-1533139502658-0198f920d8e8?auto=format&fit=crop&w=900&q=80', '["38mm","40mm"]', 15, true),
+  (4, 'Rose Gold Dress Watch', 'Shirts', 5799, 'https://images.unsplash.com/photo-1547996160-81dfa63595aa?auto=format&fit=crop&w=900&q=80', '["36mm","38mm","40mm"]', 25, true),
+  (5, 'Everyday Leather Watch', 'Pants', 4299, 'https://images.unsplash.com/photo-1434056886845-dac89ffe9b56?auto=format&fit=crop&w=900&q=80', '["40mm","42mm"]', 10, true),
+  (6, 'Premium Leather Strap', 'Accessories', 1199, 'https://images.unsplash.com/photo-1612817159949-195b6eb9e31a?auto=format&fit=crop&w=900&q=80', '["18mm","20mm","22mm"]', 30, true)
+on conflict (id) do update
+set name = excluded.name,
+    category = excluded.category,
+    price = excluded.price,
+    image_url = excluded.image_url,
+    sizes = excluded.sizes,
+    stock = excluded.stock,
+    active = excluded.active;

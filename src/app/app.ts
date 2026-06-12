@@ -83,10 +83,17 @@ const PRODUCT_IMAGE_BUCKET = 'product-images';
   styleUrl: './app.css',
 })
 export class App implements OnInit {
-  readonly storeName = 'StreetCart';
+  readonly storeName = 'TimeCraft';
   readonly whatsappNumber = WHATSAPP_NUMBER;
   readonly upiId = UPI_ID;
   readonly categories: Category[] = ['All', 'Shoes', 'Shirts', 'Pants', 'Accessories'];
+  readonly categoryLabels: Record<Category, string> = {
+    All: 'All',
+    Shoes: 'Automatic',
+    Shirts: 'Chronograph',
+    Pants: 'Minimal',
+    Accessories: 'Straps',
+  };
   readonly supabase = this.createSupabaseClient();
   private adminTapCount = 0;
   private lastAdminTapAt = 0;
@@ -94,62 +101,62 @@ export class App implements OnInit {
   readonly fallbackProducts: Product[] = [
     {
       id: 1,
-      name: 'Sprint Runner Sneakers',
+      name: 'Heritage Automatic Watch',
       category: 'Shoes',
-      price: 2499,
+      price: 8999,
       image:
-        'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=900&q=80',
-      sizes: ['7', '8', '9', '10'],
+        'https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=900&q=80',
+      sizes: ['40mm', '42mm', '44mm'],
       stock: 12,
     },
     {
       id: 2,
-      name: 'Classic White Shirt',
+      name: 'Steel Chronograph Watch',
       category: 'Shirts',
-      price: 1299,
+      price: 6499,
       image:
-        'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&w=900&q=80',
-      sizes: ['S', 'M', 'L', 'XL'],
+        'https://images.unsplash.com/photo-1508057198894-247b23fe5ade?auto=format&fit=crop&w=900&q=80',
+      sizes: ['42mm', '44mm'],
       stock: 20,
     },
     {
       id: 3,
-      name: 'Slim Fit Denim Pants',
+      name: 'Classic Minimal Watch',
       category: 'Pants',
-      price: 1799,
+      price: 3499,
       image:
-        'https://images.unsplash.com/photo-1542272604-787c3835535d?auto=format&fit=crop&w=900&q=80',
-      sizes: ['30', '32', '34', '36'],
+        'https://images.unsplash.com/photo-1533139502658-0198f920d8e8?auto=format&fit=crop&w=900&q=80',
+      sizes: ['38mm', '40mm'],
       stock: 15,
     },
     {
       id: 4,
-      name: 'Everyday Graphic Tee',
+      name: 'Rose Gold Dress Watch',
       category: 'Shirts',
-      price: 899,
+      price: 5799,
       image:
-        'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=900&q=80',
-      sizes: ['S', 'M', 'L', 'XL'],
+        'https://images.unsplash.com/photo-1547996160-81dfa63595aa?auto=format&fit=crop&w=900&q=80',
+      sizes: ['36mm', '38mm', '40mm'],
       stock: 25,
     },
     {
       id: 5,
-      name: 'Street Cargo Pants',
+      name: 'Everyday Leather Watch',
       category: 'Pants',
-      price: 1999,
+      price: 4299,
       image:
-        'https://images.unsplash.com/photo-1473966968600-fa801b869a1a?auto=format&fit=crop&w=900&q=80',
-      sizes: ['30', '32', '34', '36'],
+        'https://images.unsplash.com/photo-1434056886845-dac89ffe9b56?auto=format&fit=crop&w=900&q=80',
+      sizes: ['40mm', '42mm'],
       stock: 10,
     },
     {
       id: 6,
-      name: 'Canvas Tote Bag',
+      name: 'Premium Leather Strap',
       category: 'Accessories',
-      price: 699,
+      price: 1199,
       image:
-        'https://images.unsplash.com/photo-1622560480605-d83c853bc5c3?auto=format&fit=crop&w=900&q=80',
-      sizes: ['Free'],
+        'https://images.unsplash.com/photo-1612817159949-195b6eb9e31a?auto=format&fit=crop&w=900&q=80',
+      sizes: ['18mm', '20mm', '22mm'],
       stock: 30,
     },
   ];
@@ -426,7 +433,7 @@ export class App implements OnInit {
     const orderLines = this.cart()
       .map((item, index) => {
         const lineTotal = this.formatMessagePrice(item.price * item.qty);
-        return `${index + 1}. ${item.name}\n   Size: ${item.size} | Qty: ${item.qty} | Amount: ${lineTotal}`;
+        return `${index + 1}. ${item.name}\n   Case/strap size: ${item.size} | Qty: ${item.qty} | Amount: ${lineTotal}`;
       })
       .join('\n');
 
@@ -452,7 +459,7 @@ export class App implements OnInit {
       isUpi ? `UPI ID: ${this.upiId}` : `Amount to collect: ${this.formatMessagePrice(this.total())}`,
       isUpi
         ? 'Payment status: Paid. Screenshot attached for verification.'
-        : 'Payment status: COD. Please confirm product availability and delivery.',
+        : 'Payment status: COD. Please confirm watch availability and delivery.',
     ].join('\n');
   }
 
@@ -460,9 +467,19 @@ export class App implements OnInit {
     return `https://wa.me/${this.whatsappNumber}?text=${encodeURIComponent(this.orderMessage())}`;
   }
 
+  generalWhatsappUrl() {
+    const message = [
+      `Hi ${this.storeName},`,
+      '',
+      'I am interested in your watches. Please share the latest available models, prices, and delivery details.',
+    ].join('\n');
+
+    return `https://wa.me/${this.whatsappNumber}?text=${encodeURIComponent(message)}`;
+  }
+
   proceedToPayment() {
     if (this.checkoutDisabled()) {
-      this.sheetsStatus.set('Add products, customer name, phone, and address before payment.');
+      this.sheetsStatus.set('Add watches, customer name, phone, and address before payment.');
       return;
     }
 
@@ -472,7 +489,7 @@ export class App implements OnInit {
 
   async placeOrder() {
     if (this.checkoutDisabled()) {
-      this.sheetsStatus.set('Add products, customer name, phone, and address before placing the order.');
+      this.sheetsStatus.set('Add watches, customer name, phone, and address before placing the order.');
       return;
     }
 
@@ -606,7 +623,7 @@ export class App implements OnInit {
     this.adminProducts.update((products) => [
       {
         id: nextId,
-        name: 'New Product',
+        name: 'New Watch',
         category: 'Accessories',
         price: 0,
         image: '',
@@ -743,7 +760,7 @@ export class App implements OnInit {
       .map((line) => {
         const parts = line.split('|').map((part) => part.trim());
         return {
-          name: parts[0] || 'Product',
+          name: parts[0] || 'Watch',
           meta: parts.slice(1, -1).join(' · '),
           price: parts[parts.length - 1] || '',
         };
@@ -768,6 +785,32 @@ export class App implements OnInit {
       this.adminStatus.set(`Order ${order.orderId} marked ${status}.`);
     } catch {
       this.adminStatus.set('Could not update order status.');
+    }
+  }
+
+  async deleteAdminOrder(order: AdminOrder) {
+    const confirmed = window.confirm(`Delete order ${order.orderId}? This cannot be undone.`);
+
+    if (!confirmed) {
+      return;
+    }
+
+    if (!this.supabase) {
+      this.adminStatus.set('Supabase URL/key is missing.');
+      return;
+    }
+
+    try {
+      const { error } = await this.supabase.from('orders').delete().eq('id', order.orderId);
+
+      if (error) {
+        throw error;
+      }
+
+      this.adminOrders.update((orders) => orders.filter((item) => item.orderId !== order.orderId));
+      this.adminStatus.set(`Deleted order ${order.orderId}.`);
+    } catch {
+      this.adminStatus.set('Could not delete order.');
     }
   }
 
@@ -830,7 +873,7 @@ export class App implements OnInit {
     return this.cart()
       .map(
         (item) =>
-          `${item.name} | Size: ${item.size} | Qty: ${item.qty} | Rs ${item.price * item.qty}`,
+          `${item.name} | Case/strap size: ${item.size} | Qty: ${item.qty} | Rs ${item.price * item.qty}`,
       )
       .join('\n');
   }

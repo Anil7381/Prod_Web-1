@@ -19,7 +19,7 @@ describe('App', () => {
     fixture.detectChanges();
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Shoes, shirts, pants');
+    expect(compiled.querySelector('h1')?.textContent).toContain('Automatic, chronograph');
   });
 
   it('should add a product to the cart and calculate total', () => {
