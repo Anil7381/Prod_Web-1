@@ -5,16 +5,16 @@
       <button class="brand nav-button" type="button" (click)="handleBrandClick()">{{ storeName }}</button>
       <div class="nav-actions">
         <a href="#checkout">Cart {{ itemCount() }}</a>
-        <a class="whatsapp-link" [href]="whatsappUrl()" target="_blank" rel="noopener">WhatsApp</a>
+        <a class="whatsapp-link" [href]="generalWhatsappUrl()" target="_blank" rel="noopener">WhatsApp</a>
       </div>
     </nav>
 
     <section class="hero-grid">
       <div class="hero-copy">
-        <p class="eyebrow">Simple fashion checkout</p>
-        <h1>Shoes, shirts, pants and daily style essentials.</h1>
+        <p class="eyebrow">Curated watch checkout</p>
+        <h1>Automatic, chronograph and everyday watches.</h1>
         <p>
-          Pick your favorites, review the cart, pay with UPI, and confirm your order on WhatsApp.
+          Pick your timepiece, review the cart, pay with UPI, and confirm your order on WhatsApp.
         </p>
         <div class="hero-actions">
           <a class="primary-btn" href="#catalog">Shop now</a>
@@ -35,7 +35,7 @@
     <div class="section-heading">
       <div>
         <p class="eyebrow">Catalog</p>
-        <h2>Featured products</h2>
+        <h2>Featured watches</h2>
       </div>
       <div class="filters" aria-label="Product categories">
         @for (category of categories; track category) {
@@ -44,7 +44,7 @@
             [class.active]="selectedCategory() === category"
             (click)="setCategory(category)"
           >
-            {{ category }}
+            {{ categoryLabels[category] }}
           </button>
         }
       </div>
@@ -58,7 +58,7 @@
             <strong class="price-tag">{{ formatPrice(product.price) }}</strong>
           </div>
           <div class="product-info">
-            <p>{{ product.category }}</p>
+            <p>{{ categoryLabels[product.category] }}</p>
             <h3>{{ product.name }}</h3>
             <span class="stock-pill">{{ product.stock }} in stock</span>
             <div class="product-footer">
@@ -101,7 +101,7 @@
 
       <div class="cart-list">
         @if (cart().length === 0) {
-          <div class="empty-cart">Your cart is empty. Add a product to start an order.</div>
+          <div class="empty-cart">Your cart is empty. Add a watch to start an order.</div>
         }
 
         @for (item of cart(); track item.id + '-' + item.size) {
@@ -111,7 +111,7 @@
               <h3>{{ item.name }}</h3>
               <p>{{ formatPrice(item.price) }} each</p>
               <label>
-                Size
+                Case / strap size
                 <select [ngModel]="item.size" (ngModelChange)="updateSize(item, $event)">
                   @for (size of item.sizes; track size) {
                     <option [value]="size">{{ size }}</option>
@@ -156,7 +156,7 @@
             @if (paymentMethod() === 'UPI') {
               Send your payment screenshot on WhatsApp so the owner can verify and confirm the order.
             } @else {
-              Send this COD order on WhatsApp so the owner can confirm availability.
+              Send this COD order on WhatsApp so the owner can confirm watch availability.
             }
           </p>
         </div>
@@ -364,11 +364,11 @@
             </div>
             <div>
               <strong>COD</strong>
-              <p>Confirm product availability with customer, pack order, and collect cash on delivery.</p>
+              <p>Confirm watch availability with customer, pack order, and collect cash on delivery.</p>
             </div>
             <div>
               <strong>Stock</strong>
-              <p>Use Products tab to update stock, price, images, and active status.</p>
+              <p>Use Products tab to update watch stock, price, images, and active status.</p>
             </div>
           </section>
         </div>
@@ -386,7 +386,7 @@
                 <th>Category</th>
                 <th>Price</th>
                 <th>Stock</th>
-                <th>Sizes</th>
+                <th>Case / strap sizes</th>
                 <th>Image URL</th>
                 <th>Active</th>
                 <th></th>
@@ -400,10 +400,10 @@
                   </td>
                   <td>
                     <select [(ngModel)]="product.category" [name]="'category-' + product.id">
-                      <option value="Shoes">Shoes</option>
-                      <option value="Shirts">Shirts</option>
-                      <option value="Pants">Pants</option>
-                      <option value="Accessories">Accessories</option>
+                      <option value="Shoes">Automatic</option>
+                      <option value="Shirts">Chronograph</option>
+                      <option value="Pants">Minimal</option>
+                      <option value="Accessories">Straps</option>
                     </select>
                   </td>
                   <td>
@@ -464,6 +464,7 @@
                 <th>Payment</th>
                 <th>Status</th>
                 <th>Items</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
@@ -498,6 +499,11 @@
                         </div>
                       }
                     </div>
+                  </td>
+                  <td>
+                    <button class="danger-btn" type="button" (click)="deleteAdminOrder(order)">
+                      Delete
+                    </button>
                   </td>
                 </tr>
               }

@@ -1,6 +1,6 @@
-# StreetCart
+# TimeCraft
 
-Simple Angular e-commerce storefront with Supabase products, orders, admin login, image upload, WhatsApp checkout, and UPI QR payment.
+Simple Angular watch storefront with Supabase products, orders, admin login, image upload, WhatsApp checkout, and UPI QR payment.
 
 ## Run Locally
 
@@ -48,7 +48,7 @@ The SQL creates:
 Normal users do not see an Admin button on the website. To open admin:
 
 1. Open the store homepage.
-2. Click the `StreetCart` store name 5 times quickly.
+2. Click the `TimeCraft` store name 5 times quickly.
 3. The admin login page opens.
 4. Login with the admin user you created in Supabase Auth.
 
